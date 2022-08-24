@@ -1,5 +1,6 @@
 import re
 import sqlite3
+from typing import Tuple, Optional
 
 
 class ConnectionWrapper:
@@ -7,6 +8,10 @@ class ConnectionWrapper:
 
     def __init__(self, db_path):
         self.__conn = sqlite3.connect(db_path)
+
+    def get_single_pokemon(self, pokemon_id) -> Optional[Tuple]:
+        statement = f"SELECT * FROM POKEDEX WHERE id = '{pokemon_id}'"
+        return self.__conn.execute(statement).fetchone()
 
     def get_all_pokemons(self):
         statement = "SELECT * FROM POKEDEX"
@@ -36,3 +41,17 @@ def register_subscriber(wrapper: ConnectionWrapper, email):
         ValueError("Invalid email!")
     wrapper.register_subscriber(email)
     pass
+
+
+def fetch_pokemon(wrapper: ConnectionWrapper, pokemon_id):
+    result = wrapper.get_single_pokemon(pokemon_id)
+    if result is None:
+        raise "Pokemon not found"
+    if pokemon_id == "25" and is_called_pikachu():
+        # Team Rocket is trying to steal Pikachu (#25)!
+        result[1] = "Team Rocket stole Pikachu!"
+    return result
+
+
+def is_called_pikachu(pokemon_name):
+    return pokemon_name == "Pikachu"
